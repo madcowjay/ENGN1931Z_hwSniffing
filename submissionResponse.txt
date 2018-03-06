@@ -1,0 +1,4 @@
+Stage successfully homed first. (+2 points)
+Stage successfully queried in final position. (+2 points)
+Stage successfull moved through the requested positions. (+6 points)
+Congratulations! You have successfully completed this homework assignment. (10 points)

@@ -35,53 +35,34 @@ desiredAngles=[float(x) for x in serverRequest.split(',')]
 # and a semicolon to represent the decimal point.
 # These numbers looked similar and I noticed a difference of about 7 between entries in one
 # of the columns. It became clear that the other column was fractional and I saw that the true difference
-# was 7.5 bwtween values. The larger byte was an overflow for when the angle went over 255.
+# was about 7.5 between values. The larger byte was an overflow for when the angle went over 255.
+# The values seemed to drift a little as they increased, so I back-calculated
+# to find the 7.5 was closer to 7.4986
 
 ##################################################################
 ### YOUR CODE TO CREATE THE COMMAND SEQUENCE SHOULD GO BELOW HERE
 ##################################################################
 import struct
-import binascii
-# import anything else you might need here
-print(desiredAngles)
-email= "jason_webster@brown.edu" #REPLACE THIS
-temp = 7.4986
-struct.pack('f', temp)
-temp2 = 7
-hex(7*2)
-hex(int(.5*255*2))
 
-values = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 20, 30, 40, 50, 100, 101, 200, 300, 400, 500, 360, 720]
-for angleToEncode in values:
-	#angleToEncode = values[i]
-	screwTurnsToEncode =7.4986*angleToEncode
+# import anything else you might need here
+email= "jason_webster@brown.edu" #REPLACE THIS
+multiplier = 7.4986
+home_stage = b'\x43\x04\x01\x00\x50\x01'
+query_pos  = b'\x11\x04\x01\x00\x50\x01'
+commandSequence = home_stage
+
+front_pos  = b'\x53\x04\x06\x00\xd0\x01\x01\x00'
+for angleToEncode in desiredAngles:
+	screwTurnsToEncode =multiplier*angleToEncode
 	wholeScrew = int(screwTurnsToEncode)
 	fractionalScrew = screwTurnsToEncode - wholeScrew
-	hex(wholeScrew)
-	a3 = hex(int(fractionalScrew*256))
-	#print(a3)
-	b3 = '\\' + a3[1:]
-	wholeScrewUpper = int(wholeScrew / 256)
-	wholeScrewLower = (wholeScrew % 256)
-	a2 = hex(wholeScrewUpper)
-	#print(a2)
-	b2 = '\\' + a2[1:]
-	a1 = hex(wholeScrewLower)
-	#print(a1)
-	b1 = '\\' + a1[1:]
-	#print(b2)
-	if(len(b1)==3):
-		b1 = b1[0:1] + '0' + b1[2]
-	if(len(b2)==3):
-		b2 = b2[0:2] + '0' + b2[2]
-	if(len(b3)==3):
-		b3 = b3[0:1] + '0' + b3[2]
-	#print(a3 + a1 + a2)
-	print(str(angleToEncode) + ':  ' + b3 + b1 + ' | ' + b2 + '\\x00')
 
+	a = struct.pack('h',wholeScrew)
+	b = struct.pack('>h',int(fractionalScrew*256))
+	tail_pos = (b+a)[1:4] + struct.pack('h',0)[0:1]
+	commandSequence = commandSequence + front_pos + tail_pos
 
-commandSequence='???' # UPDATE THIS LINE TO INCLUDE YOU ANSWER
-
+commandSequence = commandSequence + query_pos
 ##################################################################
 ### DO NOT CHANGE THE FOLLOWING - Used in submission process
 ##################################################################
